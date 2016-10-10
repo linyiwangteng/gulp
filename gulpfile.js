@@ -17,6 +17,7 @@ var cache = require('gulp-cache');
 
 var uglify = require('gulp-uglify');
 
+var clean=require('gulp-clean');
 var browserSync = require('browser-sync').create();
 var reload = browserSync.reload;
 
@@ -75,10 +76,10 @@ gulp.task('cssmin',['scss'],function(){
             .pipe(gulp.dest('app/css/'))
             .pipe(gulp.dest('./dist/css/'))
             .pipe(rev.manifest())
-            .pipe(gulp.dest('./rev'))   //将 rev-manifest.json 保存到 rev 目录内
-            .pipe(reload({
+            .pipe(gulp.dest('./rev'));   //将 rev-manifest.json 保存到 rev 目录内
+            /*.pipe(reload({
                         stream:true
-                    }))
+                    }))*/
             
 });
 //替换文件中的css路径
@@ -125,6 +126,12 @@ gulp.task('html',function() {
         .pipe(browserSync.stream());
 });
 
+//删除dist的目录以及不需要的文件
+gulp.task("clean",function(){
+    return gulp.src(['dist','rev'])
+                .pipe(clean())
+})
+
 /*代理服务器+监听scss/html文件*/
 gulp.task('serve', ['scss','js'], function () {
     browserSync.init({
@@ -147,4 +154,6 @@ gulp.task('serve', ['scss','js'], function () {
 
 
 gulp.task('default', ['serve']);
-gulp.task('finish',['rev']);
+gulp.task('build',['clean'],function(){
+    gulp.start('rev','js','imagemin');
+});
