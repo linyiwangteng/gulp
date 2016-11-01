@@ -21,36 +21,8 @@ var clean=require('gulp-clean');
 var browserSync = require('browser-sync').create();
 var reload = browserSync.reload;
 
-/////////////////////////////////////////browserSync baseMethod////////////////////////////////////////////////////
-//静态服务器
-gulp.task('browser-sync', function () {
-    browserSync.init({
-        server: {
-            baseDir: "./" //设置服务器的根目录
-        },
-        logLevel: "debug",
-        logPrefix:"dev",
-        browser:'chrome',
-        notify:false //开启静默模式
-    });
-});
-//代理
-gulp.task('browser-syncx', function () {
-    browserSync.init({
-        /*你的域名或IP*/
-        proxy: ""
-    })
-});
-/////////////////////////////////////////browserSync baseMethod////////////////////////////////////////////////////
-
-/*scss编译后的css将注入到浏览器中实现更新*/
-/*gulp.task('scss', function () {
-    return gulp.src('./app/scss/*.scss').pipe(sass()).pipe(gulp.dest("app/css")).pipe(reload({
-        stream: true
-    }));
-});*/
 gulp.task('scss', function () {
-    return gulp.src('./app/scss/*.scss')
+    return gulp.src('./app/scss/**/*.scss')
         .pipe(plumber())
         .pipe(sass.sync().on('error',sass.logError))
         .pipe(sass({outputStyle:'compact'}))
@@ -63,17 +35,15 @@ gulp.task('scss', function () {
 
 /*css文件合并、压缩、重命名*/
 gulp.task('cssmin',['scss'],function(){
-    return gulp.src("./app/css/**/index*.css")
-            .pipe(concatCss("index.css"))
+    return gulp.src("./app/css/**/*.css")
+            .pipe(concatCss("mymedia.css"))
             .pipe(cleancss({
                 debug:true,
                 compatibility: 'ie8'
             }))
-            /*.pipe(rename({
-                suffix:'.min'
-            }))*/
+            
             .pipe(rev())  // 文件名加MD5后缀
-            .pipe(gulp.dest('app/css/'))
+           
             .pipe(gulp.dest('./dist/css/'))
             .pipe(rev.manifest())
             .pipe(gulp.dest('./rev'));   //将 rev-manifest.json 保存到 rev 目录内
@@ -119,37 +89,31 @@ gulp.task('js-watch',['js'],reload);
 
 //将html页面进行处理放入dist中
 gulp.task('html',function() {
-    
     return gulp.src("app/*.html")
         .pipe(plumber())        
         .pipe(gulp.dest("dist/"))
         .pipe(browserSync.stream());
 });
-
 //删除dist的目录以及不需要的文件
 gulp.task("clean",function(){
     return gulp.src(['dist','rev'])
                 .pipe(clean())
+});
+gulp.task("cleanScss",function(){
+    return gulp/src('app/css').pipe(clean());
 })
 
 /*代理服务器+监听scss/html文件*/
 gulp.task('serve', ['scss','js'], function () {
     browserSync.init({
         server: "./app"
-//        proxy:"http://127.0.0.1:53955/"
     });
     
-    gulp.watch('app/scss/*.scss', ['scss']);
+    gulp.watch('app/scss/**/*.scss', ['scss']);
     gulp.watch('app/js/*.js',['js-watch']);
-    //监听html文件的变化然后回调函数执行reload方法
-    //写法一：
-    //    gulp.watch('app/*.html').on('change', reload);
-    //写法二：
     gulp.watch('app/*.html',function(){
         reload();
     });
-//    gulp.watch("app/*.html",['html']);
-//    gulp.watch('dist/*.html').on("change",reload);
 });
 
 
